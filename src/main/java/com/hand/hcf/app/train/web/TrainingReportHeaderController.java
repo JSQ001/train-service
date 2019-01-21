@@ -59,6 +59,44 @@ public class TrainingReportHeaderController {
     }
 
 
+    /**
+     * @api {GET} /api/training/report/header/pageByCondition  【培训】条件查询报销单头
+     * @apiDescription 条件查询报销单头的详细描述
+     * @apiGroup Train
+     * @apiParam {String} [businessCode]  报销单编码
+     * @apiParam {String} [reportStatus]  报销单状态
+     * @apiParam {Long} reportStatus  公司ID
+     * @apiParam {int} [page]  第几页
+     * @apiParam {int} [size]  每页数目
+     * @apiSuccessExample {json} 成功返回值:
+     * [
+     *     {
+     *         "id": "1087256348427571201",
+     *         "businessCode": "ccc",
+     *         "companyId": "1083751704185716737",
+     *         "companyName": null,
+     *         "unitId": "1084808610477871106",
+     *         "unitName": null,
+     *         "totalAmount": 1,
+     *         "applicationId": "1085436751928553473",
+     *         "applicationName": "测试1",
+     *         "remark": null,
+     *         "tenantId": "1083751703623680001",
+     *         "setOfBooksId": "1083762150064451585",
+     *         "setOfBooksName": null,
+     *         "reportDate": "2019-01-20T01:13:16.9+08:00",
+     *         "reportStatus": 1001,
+     *         "reportStatusDesc": "编辑中"
+     *     }
+     * ]
+     * * @apiErrorExample {json} 错误返回值:
+     *  * {
+     *  *       "message": "报账单头不存在！",
+     *  *       "errorCode": "VALIDATION_ERROR",
+     *  *       "category": "ERROR",
+     *  *       "bizErrorCode": "TRAIN_HEADER_NOT_EXISTS"
+     *  * }
+     */
     @GetMapping("/pageByCondition")
     public ResponseEntity<List<TrainingReportHeaderDTO>> pageTrainingReportHeaderByCond(@RequestParam(required = false) Long applicationId,
                                                                                         @RequestParam(required = false) String businessCode,

@@ -114,6 +114,7 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
         dto.getLines().stream().forEach(line -> line.setHeaderId(header.getId()));
         lineService.insertOrUpdateTrainingReportLineBatch(dto.getLines());
         lineService.updateHeaderAmount(header.getId());
+        dto.setHeader(toDTO(header));
         return dto;
     }
 
