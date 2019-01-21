@@ -78,7 +78,7 @@
             <column name="unit_id" type="bigint" remarks="部门ID">
                 <constraints nullable="false"/>
             </column>
-            <column name="total_amount" type="decimal(20,2)" remarks="行总金额"/>
+            <column name="total_amount" type="${amount}" remarks="行总金额"/>
             <column name="application_id" type="bigint" remarks="申请人ID">
                 <constraints nullable="false"/>
             </column>
@@ -131,7 +131,7 @@
             <column name="invoice_number" type="varchar(100)" remarks="发票号码">
                 <constraints nullable="false"/>
             </column>
-            <column name="invoice_amount" type="decimal(20,2)" remarks="发票金额">
+            <column name="invoice_amount" type="${amount}" remarks="发票金额">
                 <constraints nullable="false"/>
             </column>
             <column name="invoice_date" type="timestamp" remarks="发票日期">
@@ -157,6 +157,5 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addUniqueConstraint tableName="tra_report_line" columnNames="invoice_code" constraintName="tra_report_line_u1"/>
     </changeSet>
 </databaseChangeLog>

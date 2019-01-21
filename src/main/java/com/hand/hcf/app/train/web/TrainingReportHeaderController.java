@@ -18,6 +18,10 @@ import java.util.List;
 @RequestMapping("/api/training/report/header")
 public class TrainingReportHeaderController {
 
+    /**
+     * @apiDefine Train 新费控培训
+     */
+
     @Autowired
     private TrainingReportHeaderService trainingReportHeaderService;
 
@@ -45,7 +49,7 @@ public class TrainingReportHeaderController {
 
     @PostMapping("/dto/save")
     public TrainingReportDTO saveTrainingReportDTO(@RequestBody TrainingReportDTO dto) {
-        trainingReportHeaderService.saveTrainingReportDTO(dto);
+        trainingReportHeaderService.insertOrUpdateTrainingReportDTO(dto);
         return dto;
     }
 

@@ -2,24 +2,23 @@ package com.hand.hcf.app.train.service;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.hand.hcf.app.train.domain.TrainingReportHeader;
 import com.hand.hcf.app.train.domain.TrainingReportLine;
 import com.hand.hcf.app.train.persistence.TrainingReportLineMapper;
 import com.hand.hcf.app.train.utils.RespCode;
 import com.hand.hcf.core.exception.BizException;
 import com.hand.hcf.core.service.BaseService;
-import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 @Transactional
 public class TrainingReportLineService extends BaseService<TrainingReportLineMapper,TrainingReportLine> {
 
-    @Autowired
-    private TrainingReportLineMapper lineMapper;
     @Autowired
     private TrainingReportHeaderService headerService;
 
@@ -29,9 +28,8 @@ public class TrainingReportLineService extends BaseService<TrainingReportLineMap
         if (line.getId() != null) {
             throw new BizException(RespCode.SYS_ID_NOT_NULL);
         }
-        checkData(line);
         if (line.getHeaderId() != null && headerService.selectById(line.getHeaderId()) != null) {
-            lineMapper.insert(line);
+            baseMapper.insert(line);
         } else {
             throw new BizException(RespCode.TRAIN_HEADER_NOT_EXISTS);
         }
@@ -42,37 +40,26 @@ public class TrainingReportLineService extends BaseService<TrainingReportLineMap
         if (line.getId() == null) {
             throw new BizException(RespCode.SYS_ID_NULL);
         }
-        checkData(line);
-        Long dbHeaderId = lineMapper.selectById(line.getId()).getHeaderId();
+        Long dbHeaderId = baseMapper.selectById(line.getId()).getHeaderId();
         if (line.getHeaderId() != null && line.getHeaderId().equals(dbHeaderId)) {
-            lineMapper.updateById(line);
+            baseMapper.updateById(line);
         } else {
             throw new BizException(RespCode.TRAIN_HEADER_NOT_EXISTS);
         }
         return line;
     }
 
-    private void checkData(TrainingReportLine line) {
-        if (lineMapper.selectList(new EntityWrapper<TrainingReportLine>()
-                .ne(line.getId() != null, "id", line.getId())
-                .eq(line.getInvoiceCode() != null, "invoice_code", line.getInvoiceCode())
-        ).size() > 0) {
-            throw new BizException(RespCode.TRAIN_CODE_REPEAT);
-        }
-    }
-
     public void deleteTrainingReportLineById(Long id) {
-        TrainingReportLine line = lineMapper.selectById(id);
+        TrainingReportLine line = baseMapper.selectById(id);
         if (line == null) {
             throw new BizException(RespCode.TRAIN_LINE_NOT_EXISTS);
         }
         line.setDeleted(true);
-        line.setInvoiceCode(line.getInvoiceCode() + "_DELETED_" + RandomStringUtils.randomNumeric(6));
-        lineMapper.updateById(line);
+        baseMapper.updateById(line);
     }
 
     public TrainingReportLine getTrainingReportLineById(Long id) {
-        return lineMapper.selectById(id);
+        return baseMapper.selectById(id);
     }
 
     public void deleteTrainingReportLineByHeaderId(Long headerId) {
@@ -81,23 +68,22 @@ public class TrainingReportLineService extends BaseService<TrainingReportLineMap
         }
         TrainingReportLine line = new TrainingReportLine();
         line.setDeleted(true);
-        line.setInvoiceCode(line.getInvoiceCode() + "_DELETED_" + RandomStringUtils.randomNumeric(6));
-        lineMapper.update(line, new EntityWrapper<TrainingReportLine>().eq("header_id", headerId));
+        baseMapper.update(line, new EntityWrapper<TrainingReportLine>().eq("header_id", headerId));
     }
 
     public List<TrainingReportLine> pageTrainingReportLineByHeaderId(Long headerId, Page page) {
-        return lineMapper.selectPage(page, new EntityWrapper<TrainingReportLine>()
+        return baseMapper.selectPage(page, new EntityWrapper<TrainingReportLine>()
                 .eq("header_id", headerId)
         );
     }
 
     public List<TrainingReportLine> listTrainingReportLineByHeaderId(Long headerId) {
-        return lineMapper.selectList(new EntityWrapper<TrainingReportLine>()
+        return baseMapper.selectList(new EntityWrapper<TrainingReportLine>()
                 .eq("header_id", headerId)
         );
     }
 
-    public TrainingReportLine saveTrainingReportLine(TrainingReportLine line){
+    public TrainingReportLine insertOrUpdateTrainingReportLine(TrainingReportLine line){
         if (line.getId() == null) {
             createTrainingReportLine(line);
         }else {
@@ -106,8 +92,17 @@ public class TrainingReportLineService extends BaseService<TrainingReportLineMap
         return line;
     }
 
-    public List<TrainingReportLine> saveTrainingReportLineBatch(List<TrainingReportLine> lines) {
-        lines.stream().forEach(line -> saveTrainingReportLine(line));
+    public List<TrainingReportLine> insertOrUpdateTrainingReportLineBatch(List<TrainingReportLine> lines) {
+        lines.stream().forEach(line -> insertOrUpdateTrainingReportLine(line));
         return lines;
+    }
+
+    public BigDecimal updateHeaderAmount(Long headerId) {
+        TrainingReportHeader header = new TrainingReportHeader();
+        BigDecimal amount = baseMapper.getAmount(headerId);
+        header.setId(headerId);
+        header.setTotalAmount(amount);
+        headerService.updateById(header);
+        return amount;
     }
 }

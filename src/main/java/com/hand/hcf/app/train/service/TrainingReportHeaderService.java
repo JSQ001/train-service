@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,9 +38,7 @@ import java.util.stream.Collectors;
 public class TrainingReportHeaderService  extends BaseService<TrainingReportHeaderMapper,TrainingReportHeader> {
 
     @Autowired
-    private TrainingReportHeaderMapper trainingReportHeaderMapper;
-    @Autowired
-    private TrainingReportLineService trainingReportLineService;
+    private TrainingReportLineService lineService;
     @Autowired
     private MapperFacade mapperFacade;
     @Autowired
@@ -61,8 +58,8 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
             throw new BizException(RespCode.SYS_ID_NOT_NULL);
         }
         checkData(header);
-        header.setReportStatus(TrainingReportStatus.NEW);
-        trainingReportHeaderMapper.insert(header);
+        header.setReportStatus(TrainingReportStatus.NEW.getId());
+        baseMapper.insert(header);
         return header;
     }
 
@@ -72,12 +69,12 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
             throw new BizException(RespCode.SYS_ID_NULL);
         }
         checkData(header);
-        trainingReportHeaderMapper.updateById(header);
+        baseMapper.updateById(header);
         return header;
     }
 
     private void checkData(TrainingReportHeader header) {
-        if (trainingReportHeaderMapper.selectList(new EntityWrapper<TrainingReportHeader>()
+        if (baseMapper.selectList(new EntityWrapper<TrainingReportHeader>()
                 .ne(header.getId() != null, "id", header.getId())
                 .eq(header.getBusinessCode() != null, "business_code", header.getBusinessCode())
         ).size() > 0) {
@@ -85,11 +82,12 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
         }
     }
 
-    public TrainingReportHeader saveTrainingReportHeader(TrainingReportHeader header) {
+    public TrainingReportHeader insertOrUpdateTrainingReportHeader(TrainingReportHeader header) {
 
+        checkData(header);
         if (header.getId() == null) {
             createTrainingReportHeader(header);
-        }else {
+        } else {
             updateTrainingReportHeader(header);
         }
         return header;
@@ -97,29 +95,30 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
 
     public void deleteTrainingReportHeaderById(Long id) {
 
-        TrainingReportHeader header = trainingReportHeaderMapper.selectById(id);
+        TrainingReportHeader header = baseMapper.selectById(id);
         if (header == null) {
             throw new BizException(RespCode.TRAIN_HEADER_NOT_EXISTS);
         }
         header.setDeleted(true);
         header.setBusinessCode(header.getBusinessCode() + "_DELETED_" + RandomStringUtils.randomNumeric(6));
-        trainingReportHeaderMapper.updateById(header);
-        trainingReportLineService.deleteTrainingReportLineByHeaderId(header.getId());
+        baseMapper.updateById(header);
+        lineService.deleteTrainingReportLineByHeaderId(header.getId());
     }
 
     public void deleteTrainingReportHeaderBatch(List<Long> list) {
         list.stream().forEach(this::deleteTrainingReportHeaderById);
     }
 
-    public TrainingReportDTO saveTrainingReportDTO(TrainingReportDTO dto){
-        saveTrainingReportHeader(toDomain(dto.getHeader()));
-        dto.getLines().stream().forEach(line -> line.setHeaderId(dto.getHeader().getId()));
-        trainingReportLineService.saveTrainingReportLineBatch(dto.getLines());
+    public TrainingReportDTO insertOrUpdateTrainingReportDTO(TrainingReportDTO dto){
+        TrainingReportHeader header = insertOrUpdateTrainingReportHeader(toDomain(dto.getHeader()));
+        dto.getLines().stream().forEach(line -> line.setHeaderId(header.getId()));
+        lineService.insertOrUpdateTrainingReportLineBatch(dto.getLines());
+        lineService.updateHeaderAmount(header.getId());
         return dto;
     }
 
     public TrainingReportHeaderDTO getTrainingReportHeaderById(Long id) {
-        TrainingReportHeader header = trainingReportHeaderMapper.selectById(id);
+        TrainingReportHeader header = baseMapper.selectById(id);
         return toDTO(header);
     }
 
@@ -128,7 +127,7 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
                                                                        String reportStatus,
                                                                        Long companyId,
                                                                        Page page) {
-        List<TrainingReportHeader> headerList = trainingReportHeaderMapper.selectPage(page, new EntityWrapper<TrainingReportHeader>()
+        List<TrainingReportHeader> headerList = baseMapper.selectPage(page, new EntityWrapper<TrainingReportHeader>()
                 .eq(applicationId != null, "application_id", applicationId)
                 .like(businessCode != null, "business_code", businessCode)
                 .eq(reportStatus!= null, "report_status", reportStatus)
@@ -139,18 +138,21 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
 
 //    public TrainingReportDTO getTrainingReportHeaderDetailsById(Long id, Page page) {
 //        TrainingReportDTO trainingReportDTO = new TrainingReportDTO();
-//        trainingReportDTO.setHeader(toDTO(trainingReportHeaderMapper.selectById(id)));
-//        trainingReportDTO.setLines(trainingReportLineService.listTrainingReportLineByHeaderId(id));
+//        trainingReportDTO.setHeader(toDTO(baseMapper.selectById(id)));
+//        trainingReportDTO.setLines(lineService.listTrainingReportLineByHeaderId(id));
 //        return trainingReportDTO;
 //    }
 
     public TrainingReportHeader submitTrainingReportHeader(Long id) {
-        TrainingReportHeader header = trainingReportHeaderMapper.selectById(id);
+        TrainingReportHeader header = baseMapper.selectById(id);
         if (header == null) {
             throw new BizException(RespCode.TRAIN_HEADER_NOT_EXISTS);
         }
-        header.setReportStatus(TrainingReportStatus.SUBMIT);
-        trainingReportHeaderMapper.updateById(header);
+        if (header.getReportStatus() != TrainingReportStatus.NEW.getId()) {
+            throw new BizException(RespCode.TRAIN_SUBMIT_ERROR);
+        }
+        header.setReportStatus(TrainingReportStatus.SUBMIT.getId());
+        baseMapper.updateById(header);
         return header;
     }
 
@@ -179,8 +181,7 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
             dto.setApplicationName(userCO.getFullName());
         }
 
-        dto.setReportStatusId(domain.getReportStatus().getId());
-        SysCodeValueCO sysCodeValueCO = organizationClient.getSysCodeValueByCodeAndValue("2028", domain.getReportStatus().getId().toString());
+        SysCodeValueCO sysCodeValueCO = organizationClient.getSysCodeValueByCodeAndValue("2028", domain.getReportStatus().toString());
         if (sysCodeValueCO != null) {
             dto.setReportStatusDesc(sysCodeValueCO.getName());
         }
@@ -201,7 +202,6 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
             TrainingReportHeaderDTO dto = mapperFacade.map(domain, TrainingReportHeaderDTO.class);
 
             //转化其他属性
-            dto.setReportStatusId(domain.getReportStatus().getId());
             //先判断userMap存在数据不，不存在就去查
             if (!userMap.containsKey(domain.getApplicationId())) {
                 // 获取用户名称
@@ -211,8 +211,7 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
                 }
             }
             dto.setApplicationName(userMap.get(domain.getApplicationId()));
-
-            dto.setReportStatusDesc(statusMap.get(domain.getReportStatus().getId()));
+            dto.setReportStatusDesc(statusMap.get(domain.getReportStatus().toString()));
             dtos.add(dto);
         }
         return dtos;
@@ -222,8 +221,6 @@ public class TrainingReportHeaderService  extends BaseService<TrainingReportHead
         if (dto != null){
             TrainingReportHeader domain = mapperFacade.map(dto, TrainingReportHeader.class);
 
-            domain.setReportStatus(TrainingReportStatus.parse(dto.getReportStatusId()));
-            domain.setTotalAmount(BigDecimal.ZERO);
             return domain;
         }
         return null;

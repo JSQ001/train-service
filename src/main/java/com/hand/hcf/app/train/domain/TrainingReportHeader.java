@@ -1,8 +1,6 @@
 package com.hand.hcf.app.train.domain;
 
-import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableName;
-import com.hand.hcf.app.train.enums.TrainingReportStatus;
 import com.hand.hcf.core.domain.DomainLogic;
 import lombok.Data;
 
@@ -31,7 +29,6 @@ public class TrainingReportHeader extends DomainLogic {
 
     private ZonedDateTime reportDate;//报账日期
 
-    @TableField("report_status")
-    private TrainingReportStatus reportStatus;//报账单状态
+    private Integer reportStatus;//报账单状态
 
 }

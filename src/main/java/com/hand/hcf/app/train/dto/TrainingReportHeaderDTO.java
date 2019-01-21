@@ -14,7 +14,7 @@ public class TrainingReportHeaderDTO {
     private String companyName;//公司
     private Long unitId;
     private String unitName;//部门
-    private String totalAmount;//行总金额
+    private BigDecimal totalAmount;//行总金额
     private Long applicationId;//申请人ID
     private String applicationName;//申请人
     private String remark;//说明
@@ -22,6 +22,6 @@ public class TrainingReportHeaderDTO {
     private Long setOfBooksId;//账套ID
     private String setOfBooksName;//账套名称
     private ZonedDateTime reportDate;//报账日期
-    private Integer reportStatusId;//报账单状态
+    private Integer reportStatus;//报账单状态
     private String reportStatusDesc;//报账单状态描述
 }
