@@ -13,4 +13,10 @@
     <property name="autoIncrement" value="true" dbms="mysql,h2,postgresql,oracle"/>
     <property name="amount" value="decimal(20,2)"/>
 
+    
+    <changeSet id="2019012314306" author="jsq">
+        <createTable tableName="">
+            <column></column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>
