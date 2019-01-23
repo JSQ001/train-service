@@ -12,11 +12,150 @@
     <property name="now" value="sysdate" dbms="oracle"/>
     <property name="autoIncrement" value="true" dbms="mysql,h2,postgresql,oracle"/>
     <property name="amount" value="decimal(20,2)"/>
+    <changeSet id="201901231430612" author="jsq">
+        <createTable tableName="tra_message_14306_jsq" remarks="消息">
+            <column name="id" type="bigint" remarks="">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_tra_message_14306_jsq"/>
+            </column>
+            <column name="code" type="varchar(50)" remarks="消息代码">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)" remarks="消息名称">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enabled" type="boolean" remarks="是否有效">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted" type="boolean" remarks="是否删除">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version_number" type="int" defaultValue="1" remarks="版本号">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP" remarks="创建时间">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP" remarks="最后修改日期">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="bigint" remarks="创建人">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_by" type="bigint" remarks="最后修改人">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="tra_message_14306_jsq" columnNames="code" constraintName="uk_tra_message_14306_jsq"/>
+    </changeSet>
+    <changeSet id="201901231430614" author="jsq">
+        <createTable tableName="tra_message_i18n_14306_jsq" remarks="消息多语言表">
+            <column name="id" type="bigint" defaultValue="0" remarks="">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_tra_message_i18n_id"/>
+            </column>
+            <column name="language" type="varchar(20)" remarks="语言">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_tra_message_i18n_language"/>
+            </column>
+            <column name="name" type="varchar(100)" remarks="消息名称">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
 
-    
-    <changeSet id="2019012314306" author="jsq">
-        <createTable tableName="">
-            <column></column>
+    <changeSet id="20190123143061401" author="jsq">
+        <createTable tableName="tra_report_header_14306_jsq" remarks="报销单头表">
+            <column name="id" type="bigint" remarks="主键ID">
+                <constraints
+                        nullable="false"
+                        primaryKey="true"
+                        primaryKeyName="pk_tra_report_header_14306_jsq"/>
+            </column>
+            <column name="business_code" type="varchar(50)" remarks="对公报销单头编码">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="bigint" remarks="公司ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_id" type="bigint" remarks="部门ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_amount" type="${amount}" remarks="行总金额"/>
+            <column name="application_id" type="bigint" remarks="申请人ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remark" type="varchar(500)" remarks="说明"/>
+            <column name="tenant_id" type="bigint" remarks="租户ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="set_of_books_id" type="bigint" remarks="账套ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="report_date" type="timestamp" remarks="报账日期"/>
+            <column name="report_status" type="int" remarks="报账单状态"/>
+            <column name="deleted" type="boolean" remarks="删除标志">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version_number" type="int" remarks="版本号">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValue="CURRENT_TIMESTAMP" remarks="创建日期">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="bigint" remarks="创建用户ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_date" type="timestamp" defaultValue="CURRENT_TIMESTAMP" remarks="最后更新日期">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_by" type="bigint" remarks="最后更新用户ID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="tra_report_header_14306_jsq" columnNames="business_code" constraintName="tra_report_header_u1_14306_jsq"/>
+
+        <createTable tableName="tra_report_line_14306_jsq" remarks="报销单行表">
+            <column name="id" type="bigint" remarks="主键ID">
+                <constraints
+                        nullable="false"
+                        primaryKey="true"
+                        primaryKeyName="pk_tra_report_line_14306_jsq"/>
+            </column>
+            <column name="header_id" type="bigint" remarks="报销单头表ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_number" type="int" remarks="行号">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_code" type="varchar(100)" remarks="发票代码">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_number" type="varchar(100)" remarks="发票号码">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_amount" type="${amount}" remarks="发票金额">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_date" type="timestamp" remarks="发票日期">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remark" type="varchar(500)" remarks="说明"/>
+            <column name="deleted" type="boolean" remarks="删除标志">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version_number" type="int" remarks="版本号">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValue="CURRENT_TIMESTAMP" remarks="创建日期">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="bigint" remarks="创建用户ID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_date" type="timestamp" defaultValue="CURRENT_TIMESTAMP" remarks="最后更新日期">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_by" type="bigint" remarks="最后更新用户ID">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 </databaseChangeLog>
