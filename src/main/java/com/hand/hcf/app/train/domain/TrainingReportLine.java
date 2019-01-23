@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 @Data
-@TableName("tra_report_line")
+@TableName("tra_report_line_14306_jsq")
 public class TrainingReportLine extends DomainLogic {
 
     private Integer lineNumber;//行号

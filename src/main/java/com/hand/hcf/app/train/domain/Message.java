@@ -11,7 +11,7 @@ import lombok.Data;
  * @date 2019/1/10
  */
 @Data
-@TableName("tra_message")
+@TableName("tra_message_14306_jsq")
 public class Message extends DomainI18nEnable {
     private String code;
     @I18nField
